@@ -1,0 +1,8 @@
+pandas
+bs4
+openpyxl
+xlsxwriter
+playwright
+fake-useragent
+aiohttp
+asyncio
