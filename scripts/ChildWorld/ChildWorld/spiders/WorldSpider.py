@@ -2,7 +2,16 @@ import scrapy
 from bs4 import BeautifulSoup
 import lxml
 import pandas as pd
-import re
+import re, json
+
+def df(lst, key):
+    result = {i : [] for i in set([i[key] for i in lst])}
+    for item in lst:
+        num = item[key]
+        del item[key]
+        result[num].append(item)
+    for k, v in result.items():
+        yield k, v
 
 class ChildWorld(scrapy.Spider):
     name = 'ChildWorld'
@@ -169,9 +178,6 @@ class ChildWorld(scrapy.Spider):
 
 
     def closed(self, reason):
-        import json
-        import pandas as pd
-
         with open('results/child.jsonl', 'r', encoding='utf-8') as file:
             s = file.readlines()
         result = [json.loads(item) for item in s]
@@ -199,12 +205,7 @@ class ChildWorld(scrapy.Spider):
                 r.append(tmp)
             p = pd.DataFrame(r)
             p.to_excel(writer, sheet_name='short_prod', index=False)
-            for name in roots:
-                tmp = []
-                for prod in result:
-                    if prod['№ link'] == name:
-                        tmp.append(prod)
-                        del prod['№ link']
-                df = pd.DataFrame(tmp)
-                df.to_excel(writer, index=False, sheet_name=f'{name} link')
+            for name, products in df(result, "number"):
+                p = pd.DataFrame(products)
+                p.to_excel(writer, sheet_name=f"{name} link", index=False)
           
