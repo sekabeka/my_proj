@@ -181,7 +181,6 @@ class ChildWorld(scrapy.Spider):
         with open('results/child.jsonl', 'r', encoding='utf-8') as file:
             s = file.readlines()
         result = [json.loads(item) for item in s]
-        roots = set([i['№ link'] for i in result])
         p = pd.DataFrame(result)
         with pd.ExcelWriter('results/child.xlsx', engine='xlsxwriter', engine_kwargs={'options' : {'strings_to_urls': False}}) as writer:
             p.to_excel(writer, index=False, sheet_name='products')
