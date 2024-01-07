@@ -1,8 +1,13 @@
 import scrapy
 from bs4 import BeautifulSoup
 import lxml
+<<<<<<< HEAD
 import re, json
 import pandas as pd
+=======
+import pandas as pd
+import re, json
+>>>>>>> 2f5f45d12fc7f83d9ab3fa0079a8441c94377091
 
 def df(lst, key):
     result = {i : [] for i in set([i[key] for i in lst])}
