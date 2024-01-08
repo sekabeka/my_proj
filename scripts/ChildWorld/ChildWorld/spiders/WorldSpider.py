@@ -1,13 +1,19 @@
 import scrapy
 from bs4 import BeautifulSoup
 import lxml
-<<<<<<< HEAD
-import re, json
 import pandas as pd
-=======
-import pandas as pd
-import re, json
->>>>>>> 2f5f45d12fc7f83d9ab3fa0079a8441c94377091
+import re, json, requests
+
+
+API_KEY = 'd507f5285e-5834de8469-bd6d9e795a'
+
+url = f"https://proxy6.net/api/{API_KEY}/getproxy"
+
+def proxys():
+	response = requests.get(url)
+	data = response.json()
+	for item in data['list'].values():
+            yield f'http://{item["user"]}:{item["pass"]}@{item["ip"]}:{item["port"]}'
 
 def df(lst, key):
     result = {i : [] for i in set([i[key] for i in lst])}
@@ -23,15 +29,17 @@ class ChildWorld(scrapy.Spider):
     unique = 0
 
     def start_requests(self):
+        lst = []
+        for proxy in proxys():
+            lst.append(proxy)
         p = pd.read_excel('input_data/Detmir.xlsx').to_dict('list')
         start_urls = p['Ссылки на категории товаров']
         roots_categories = p['Корневая']
         add_categories, add2_categories = p['Подкатегория 1'], p['Подкатегория 2']
         placements = p['Размещение на сайте']
         prefixs = p['Префиксы']
-        value = 0
+        value, idx = 1, 0
         for url, root, add, add2, pref, place in zip(start_urls, roots_categories, add_categories, add2_categories, prefixs, placements):
-            value = value + 1
             kwargs = {
                 'root_category' : root,
                 'add_category' : add,
@@ -42,7 +50,15 @@ class ChildWorld(scrapy.Spider):
                 'domain' : url,
                 'number' : value
             }
-            yield scrapy.Request(url, cb_kwargs=kwargs)
+            yield scrapy.Request(
+                url,
+                cb_kwargs=kwargs,
+                meta={
+                    'proxy' : lst[idx]
+                }
+            )
+            value, idx = value + 1, idx + 1 if idx < len(lst) - 1 else 0
+
     
 
 
