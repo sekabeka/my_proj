@@ -1,0 +1,10 @@
+scrapy
+asyncio
+lxml
+bs4
+pandas
+playwright
+aiohttp
+schedule
+xlsxwriter
+openpyxl
