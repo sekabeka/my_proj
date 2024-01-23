@@ -3,6 +3,10 @@ from bs4 import BeautifulSoup
 import lxml
 import pandas as pd
 import re, json, requests
+import schedule, time
+
+from scrapy.utils.project import get_project_settings
+from scrapy.crawler import CrawlerProcess
 
 
 API_KEY = 'd507f5285e-5834de8469-bd6d9e795a'
@@ -27,6 +31,15 @@ def df(lst, key):
 class ChildWorld(scrapy.Spider):
     name = 'ChildWorld'
     unique = 0
+    custom_settings = {
+        'FEEDS' : {
+            'results/child.jsonl' : {
+                'format' : 'jsonlines',
+                'overwrite' : True,
+                'encoding' : 'utf-8'
+            }
+        },
+    }
 
     def start_requests(self):
         lst = []
@@ -58,9 +71,6 @@ class ChildWorld(scrapy.Spider):
                 }
             )
             value, idx = value + 1, idx + 1 if idx < len(lst) - 1 else 0
-
-    
-
 
     def ReceiveInfo(self, response, **kwargs):
         soup = BeautifulSoup(response.text, 'lxml')
@@ -228,4 +238,23 @@ class ChildWorld(scrapy.Spider):
             for name, products in df(result, "number"):
                 p = pd.DataFrame(products)
                 p.to_excel(writer, sheet_name=f"{name} link", index=False)
-          
+
+
+
+process = CrawlerProcess(
+    get_project_settings()
+)
+process.crawl(ChildWorld)
+
+
+def job():
+    process.start()
+    
+
+schedule.every().day.at('07:00', 'Europe/Moscow').do(job)
+
+
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)

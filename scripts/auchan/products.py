@@ -1,4 +1,4 @@
-
+import schedule
 from functions import *
 list_of_products_errors, auchan = [], 'https://www.auchan.ru'
 
@@ -198,4 +198,14 @@ async def main():
     print (f'Количество не собранных товаров - {len(list_of_products_errors)}')
   
 
-asyncio.run(main())
+def job():
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
+
+schedule.every().day.at('07:00', 'Europe/Moscow').do(job)
+
+
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)

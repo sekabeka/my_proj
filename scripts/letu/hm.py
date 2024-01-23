@@ -4,6 +4,8 @@ import re
 import asyncio
 from json import loads
 from types import NoneType
+import schedule
+import time
 
 def filter(object:pd.DataFrame, key:str):
     return object.drop_duplicates(subset=[key])
@@ -212,7 +214,17 @@ def parse(data, data2, **kwargs):
     
             
 
-asyncio.run(main())
+def job():
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
+
+schedule.every().day.at('07:00', 'Europe/Moscow').do(job)
+
+
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)
 
 
 
