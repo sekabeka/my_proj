@@ -241,20 +241,23 @@ class ChildWorld(scrapy.Spider):
 
 
 
-process = CrawlerProcess(
-    get_project_settings()
-)
-process.crawl(ChildWorld)
 
 
 def job():
+    process = CrawlerProcess(
+        get_project_settings()
+    )
+    process.crawl(ChildWorld)
+
     process.start()
+
+job()
     
 
-schedule.every().day.at('07:00', 'Europe/Moscow').do(job)
+#schedule.every().day.at('07:00', 'Europe/Moscow').do(job)
 
 
 
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+#while True:
+ #   schedule.run_pending()
+  #  time.sleep(1)
