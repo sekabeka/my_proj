@@ -3,6 +3,23 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+import requests
+
+API_KEY = 'd507f5285e-5834de8469-bd6d9e795a'
+
+url = f"https://proxy6.net/api/{API_KEY}/getproxy"
+
+def proxys():
+    response = requests.get(url)
+    data = response.json()
+    lst = []
+    for item in data['list'].values():
+        lst.append(f'http://{item["user"]}:{item["pass"]}@{item["ip"]}:{item["port"]}')
+    while True:
+        for i in lst:
+            yield i
+
+
 from scrapy import signals
 
 # useful for handling different item types with a single interface
@@ -60,7 +77,7 @@ class ChildworldDownloaderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.
-
+    lst = proxys()
     @classmethod
     def from_crawler(cls, crawler):
         # This method is used by Scrapy to create your spiders.
@@ -78,6 +95,7 @@ class ChildworldDownloaderMiddleware:
         # - or return a Request object
         # - or raise IgnoreRequest: process_exception() methods of
         #   installed downloader middleware will be called
+        request.meta['proxy'] = next(self.lst)
         return None
 
     def process_response(self, request, response, spider):

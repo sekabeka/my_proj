@@ -7,6 +7,7 @@ import schedule, time
 
 from scrapy.utils.project import get_project_settings
 from scrapy.crawler import CrawlerProcess
+from scrapy.settings import Settings
 
 
 API_KEY = 'd507f5285e-5834de8469-bd6d9e795a'
@@ -39,19 +40,19 @@ class ChildWorld(scrapy.Spider):
                 'encoding' : 'utf-8'
             }
         },
+        "DOWNLOADER_MIDDLEWARES" : {
+            "ChildWorld.middlewares.ChildworldDownloaderMiddleware": 543
+        }
     }
 
     def start_requests(self):
-        lst = []
-        for proxy in proxys():
-            lst.append(proxy)
         p = pd.read_excel('input_data/Detmir.xlsx').to_dict('list')
         start_urls = p['Ссылки на категории товаров']
         roots_categories = p['Корневая']
         add_categories, add2_categories = p['Подкатегория 1'], p['Подкатегория 2']
         placements = p['Размещение на сайте']
         prefixs = p['Префиксы']
-        value, idx = 1, 0
+        value = 1
         for url, root, add, add2, pref, place in zip(start_urls, roots_categories, add_categories, add2_categories, prefixs, placements):
             kwargs = {
                 'root_category' : root,
@@ -66,11 +67,8 @@ class ChildWorld(scrapy.Spider):
             yield scrapy.Request(
                 url,
                 cb_kwargs=kwargs,
-                meta={
-                    'proxy' : lst[idx]
-                }
             )
-            value, idx = value + 1, idx + 1 if idx < len(lst) - 1 else 0
+            value = value + 1
 
     def ReceiveInfo(self, response, **kwargs):
         soup = BeautifulSoup(response.text, 'lxml')
@@ -245,13 +243,12 @@ class ChildWorld(scrapy.Spider):
 
 def job():
     process = CrawlerProcess(
-        get_project_settings()
+        Settings()
     )
     process.crawl(ChildWorld)
 
     process.start()
 
-job()
     
 
 #schedule.every().day.at('07:00', 'Europe/Moscow').do(job)
